@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         selectedDate = value;
                       });
+                      Navigator.pop(context);
                     },
                     firstDate: DateTime(2021),
                     lastDate: DateTime(2025),
@@ -86,10 +87,10 @@ class _HomePageState extends State<HomePage> {
               isButtonShow: false,
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              child: Text("Show Custom Dialog"),
-              onPressed: () => _showCustomDialog(context),
-            ),
+            // ElevatedButton(
+            //   child: Text("Show Custom Dialog"),
+            //   onPressed: () => _showCustomDialog(context),
+            // ),
           ],
         ),
       ),

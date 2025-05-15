@@ -1297,6 +1297,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                 crossAxisSpacing: 6,
               ),
               shrinkWrap: true,
+
               itemCount: 42,
               itemBuilder: (_, index) {
                 final date = calendarDays[index];
@@ -1361,6 +1362,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
       ),
     );
   }
+
   // ----------------------------------------------- Widget ---------------------------------------------------->
 
   @override
