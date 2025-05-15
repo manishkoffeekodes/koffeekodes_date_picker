@@ -1297,7 +1297,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                 crossAxisSpacing: 6,
               ),
               shrinkWrap: true,
-
+              // scrollDirection: Axis.horizontal,
               itemCount: 42,
               itemBuilder: (_, index) {
                 final date = calendarDays[index];
