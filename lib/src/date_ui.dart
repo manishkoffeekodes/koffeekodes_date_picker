@@ -228,11 +228,19 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
   // Flag to track temporary year changes
   bool isTempYear = false;
 
+  late PageController pageController;
+
+
+// Add this to your state to keep track of the initial month index
+  late int initialPage;
+
   @override
   void initState() {
     super.initState();
-
-    // Initialize variables with the initial date provided by the widget
+    initialPage = (widget.initialDate.year - widget.firstDate.year) * 12 +
+        (widget.initialDate.month - widget.firstDate.month);
+    pageController = PageController(initialPage: initialPage);
+    // ... other initializations
 
     selectedDate = widget.initialDate;
     focusSelectedDate = widget.initialDate;
@@ -257,30 +265,54 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
 
   // Navigate to the previous month
 
+  // void goToPreviousMonth() {
+  //   if (displayedMonth.isAfter(DateTime(widget.firstDate.year, 1))) {
+  //     setState(() {
+  //       // Update the displayed month to the previous month
+  //
+  //       displayedMonth = DateTime(
+  //         displayedMonth.year,
+  //         displayedMonth.month - 1,
+  //       );
+  //     });
+  //   }
+  // }
+  //
+  // // Navigate to the next month
+  //
+  // void goToNextMonth() {
+  //   if (displayedMonth.isBefore(DateTime(widget.lastDate.year, 12))) {
+  //     setState(() {
+  //       // Update the displayed month to the next month
+  //
+  //       displayedMonth = DateTime(
+  //         displayedMonth.year,
+  //         displayedMonth.month + 1,
+  //       );
+  //     });
+  //   }
+  // }
   void goToPreviousMonth() {
-    if (displayedMonth.isAfter(DateTime(widget.firstDate.year, 1))) {
+    final prevMonth = DateTime(displayedMonth.year, displayedMonth.month - 1, );
+     if (displayedMonth.isAfter(DateTime(widget.firstDate.year, 1)))  {
       setState(() {
-        // Update the displayed month to the previous month
-
-        displayedMonth = DateTime(
-          displayedMonth.year,
-          displayedMonth.month - 1,
-        );
+        displayedMonth = prevMonth;
+        // Calculate the new page index
+        int newPage = (prevMonth.year - widget.firstDate.year) * 12 + (prevMonth.month - widget.firstDate.month);
+        pageController.animateToPage(newPage, duration: Duration(milliseconds: 300), curve: Curves.ease);
       });
     }
   }
 
-  // Navigate to the next month
-
   void goToNextMonth() {
+    final nextMonth = DateTime(displayedMonth.year, displayedMonth.month + 1);
     if (displayedMonth.isBefore(DateTime(widget.lastDate.year, 12))) {
       setState(() {
-        // Update the displayed month to the next month
-
-        displayedMonth = DateTime(
-          displayedMonth.year,
-          displayedMonth.month + 1,
-        );
+        displayedMonth = nextMonth;
+        // Calculate the new page index
+        print("nextMonth - ${nextMonth.month}");
+        int newPage = (nextMonth.year - widget.firstDate.year) * 12 + (nextMonth.month - widget.firstDate.month);
+        pageController.animateToPage(newPage, duration: Duration(milliseconds: 300), curve: Curves.ease);
       });
     }
   }
@@ -1060,6 +1092,9 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
         'yyyy-MM-dd',
       ).parse(DateFormat('yyyy-MM-dd').format(focusSelectedDate)),
     );
+// Calculate the total number of months between firstDate and lastDate (inclusive)
+    final int totalMonths = (widget.lastDate.year - widget.firstDate.year) * 12 +
+        (12 - 1) + 1;
 
     return CallbackShortcuts(
       bindings: {
@@ -1290,73 +1325,161 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                       .toList(),
             ),
             // Calendar grid with selectable dates
-            GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisSpacing: 6,
-                crossAxisSpacing: 6,
-              ),
-              shrinkWrap: true,
-              // scrollDirection: Axis.horizontal,
-              itemCount: 42,
-              itemBuilder: (_, index) {
-                final date = calendarDays[index];
-                final isCurrentMonth = date.month == displayedMonth.month;
-                final isSelected =
-                    date.year == selectedDate.year &&
-                    date.month == selectedDate.month &&
-                    date.day == selectedDate.day;
-                final isFocusDate =
-                    date.year == focusSelectedDate.year &&
-                    date.month == focusSelectedDate.month &&
-                    date.day == focusSelectedDate.day;
 
-                return Focus(
-                  focusNode: dateFocusNode,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        focusSelectedDate = date;
-                        widget.onDateSelected(date);
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color:
-                            isCurrentMonth
-                                ? (isSelected
-                                    ? widget.selectedColor ?? Colors.blue
-                                    : widget.unSelectedColor ??
-                                        Colors.transparent)
-                                : widget.disabledColor ?? Colors.transparent,
-                        border: Border.all(
-                          color:
-                              isFocusDate
-                                  ? widget.borderColor ?? Colors.grey
-                                  : Colors.transparent,
-                          width: widget.borderWidth ?? 1.0,
-                        ),
-                        borderRadius:
-                            widget.borderRadius ?? BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        '${date.day}',
-                        style: TextStyle(
-                          color:
+            SizedBox(
+               height: 270, // adjust height to fit grid
+              child: PageView.builder(
+                controller: pageController,
+                physics: ClampingScrollPhysics(),
+                itemCount: totalMonths, // <-- Add this line
+                onPageChanged: (index) {
+                  int year = widget.firstDate.year + ((widget.firstDate.month - 1 + index) ~/ 12);
+                  int month = ((widget.firstDate.month - 1 + index) % 12) + 1;
+                  DateTime newMonth = DateTime(year, month, 1);
+                  setState(() {
+                    displayedMonth = newMonth;
+                  });
+                },
+                itemBuilder: (_, index) {
+
+                  return GridView.builder (
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: 6,
+                      crossAxisSpacing: 6,
+                    ),
+                    shrinkWrap: true,
+                    // scrollDirection: Axis.horizontal,
+                    itemCount: 42,
+                    itemBuilder: (_, index) {
+                      final date = calendarDays[index];
+                      final isCurrentMonth = date.month == displayedMonth.month;
+                      final isSelected =
+                          date.year == selectedDate.year &&
+                              date.month == selectedDate.month &&
+                              date.day == selectedDate.day;
+                      final isFocusDate =
+                          date.year == focusSelectedDate.year &&
+                              date.month == focusSelectedDate.month &&
+                              date.day == focusSelectedDate.day;
+
+                      return Focus(
+                        focusNode: dateFocusNode,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              focusSelectedDate = date;
+                              widget.onDateSelected(date);
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color:
                               isCurrentMonth
                                   ? (isSelected
-                                      ? widget.textSelectedColor ?? Colors.white
-                                      : widget.textColor ?? Colors.black)
-                                  : widget.textDisabledColor ?? Colors.grey,
-                          fontWeight: FontWeight.w500,
+                                  ? widget.selectedColor ?? Colors.blue
+                                  : widget.unSelectedColor ??
+                                  Colors.transparent)
+                                  : widget.disabledColor ?? Colors.transparent,
+                              border: Border.all(
+                                color:
+                                isFocusDate
+                                    ? widget.borderColor ?? Colors.grey
+                                    : Colors.transparent,
+                                width: widget.borderWidth ?? 1.0,
+                              ),
+                              borderRadius:
+                              widget.borderRadius ?? BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                color:
+                                isCurrentMonth
+                                    ? (isSelected
+                                    ? widget.textSelectedColor ?? Colors.white
+                                    : widget.textColor ?? Colors.black)
+                                    : widget.textDisabledColor ?? Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                      );
+                    },
+                  );
+                },
+              ),
+            )
+
+            // GridView.builder (
+            //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            //     crossAxisCount: 7,
+            //     mainAxisSpacing: 6,
+            //     crossAxisSpacing: 6,
+            //   ),
+            //   shrinkWrap: true,
+            //   // scrollDirection: Axis.horizontal,
+            //   itemCount: 42,
+            //   itemBuilder: (_, index) {
+            //     final date = calendarDays[index];
+            //     final isCurrentMonth = date.month == displayedMonth.month;
+            //     final isSelected =
+            //         date.year == selectedDate.year &&
+            //         date.month == selectedDate.month &&
+            //         date.day == selectedDate.day;
+            //     final isFocusDate =
+            //         date.year == focusSelectedDate.year &&
+            //         date.month == focusSelectedDate.month &&
+            //         date.day == focusSelectedDate.day;
+            //
+            //     return Focus(
+            //       focusNode: dateFocusNode,
+            //       child: GestureDetector(
+            //         onTap: () {
+            //           setState(() {
+            //             focusSelectedDate = date;
+            //             widget.onDateSelected(date);
+            //           });
+            //         },
+            //         child: Container(
+            //           alignment: Alignment.center,
+            //           decoration: BoxDecoration(
+            //             color:
+            //                 isCurrentMonth
+            //                     ? (isSelected
+            //                         ? widget.selectedColor ?? Colors.blue
+            //                         : widget.unSelectedColor ??
+            //                             Colors.transparent)
+            //                     : widget.disabledColor ?? Colors.transparent,
+            //             border: Border.all(
+            //               color:
+            //                   isFocusDate
+            //                       ? widget.borderColor ?? Colors.grey
+            //                       : Colors.transparent,
+            //               width: widget.borderWidth ?? 1.0,
+            //             ),
+            //             borderRadius:
+            //                 widget.borderRadius ?? BorderRadius.circular(30),
+            //           ),
+            //           child: Text(
+            //             '${date.day}',
+            //             style: TextStyle(
+            //               color:
+            //                   isCurrentMonth
+            //                       ? (isSelected
+            //                           ? widget.textSelectedColor ?? Colors.white
+            //                           : widget.textColor ?? Colors.black)
+            //                       : widget.textDisabledColor ?? Colors.grey,
+            //               fontWeight: FontWeight.w500,
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // ),
           ],
         ),
       ),
