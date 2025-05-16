@@ -250,7 +250,9 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
 
     initialMonthPage = widget.initialDate.year - widget.firstDate.year;
     monthPageController = PageController(initialPage: initialMonthPage);
-
+// For the year picker (16 years per page)
+    final int initialYearPage = ((widget.initialDate.year - widget.firstDate.year) / 16).floor();
+    yearPageController = PageController(initialPage: initialYearPage);
 
     selectedDate = widget.initialDate;
     focusSelectedDate = widget.initialDate;
@@ -273,35 +275,6 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
     currentDecadeStart = (selectedYear ~/ 10) * 10;
   }
 
-  // Navigate to the previous month
-
-  // void goToPreviousMonth() {
-  //   if (displayedMonth.isAfter(DateTime(widget.firstDate.year, 1))) {
-  //     setState(() {
-  //       // Update the displayed month to the previous month
-  //
-  //       displayedMonth = DateTime(
-  //         displayedMonth.year,
-  //         displayedMonth.month - 1,
-  //       );
-  //     });
-  //   }
-  // }
-  //
-  // // Navigate to the next month
-  //
-  // void goToNextMonth() {
-  //   if (displayedMonth.isBefore(DateTime(widget.lastDate.year, 12))) {
-  //     setState(() {
-  //       // Update the displayed month to the next month
-  //
-  //       displayedMonth = DateTime(
-  //         displayedMonth.year,
-  //         displayedMonth.month + 1,
-  //       );
-  //     });
-  //   }
-  // }
 
   void goToPreviousMonth() {
     final prevMonth = DateTime(displayedMonth.year, displayedMonth.month - 1, );
