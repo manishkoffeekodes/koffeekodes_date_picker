@@ -233,6 +233,13 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
 
 // Add this to your state to keep track of the initial month index
   late int initialPage;
+// Add this to your state to keep track of the initial year page
+  late int initialMonthPage;
+  late PageController monthPageController;
+  // Add this to your state to keep track of the initial year page
+  late int initialYearPage;
+  late PageController yearPageController;
+
 
   @override
   void initState() {
@@ -240,7 +247,10 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
     initialPage = (widget.initialDate.year - widget.firstDate.year) * 12 +
         (widget.initialDate.month - widget.firstDate.month);
     pageController = PageController(initialPage: initialPage);
-    // ... other initializations
+
+    initialMonthPage = widget.initialDate.year - widget.firstDate.year;
+    monthPageController = PageController(initialPage: initialMonthPage);
+
 
     selectedDate = widget.initialDate;
     focusSelectedDate = widget.initialDate;
@@ -292,6 +302,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
   //     });
   //   }
   // }
+
   void goToPreviousMonth() {
     final prevMonth = DateTime(displayedMonth.year, displayedMonth.month - 1, );
      if (displayedMonth.isAfter(DateTime(widget.firstDate.year, 1)))  {
@@ -367,88 +378,88 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
       child: Column(
         children: [
           child,
-
-          SizedBox(height: (widget.isButtonShow ?? true) ? 10 : 0),
-
           (widget.isButtonShow ?? true)
-              ? Row(
-                mainAxisAlignment:
-                    widget.buttonMainAxisAlignment ?? MainAxisAlignment.end,
-                crossAxisAlignment:
-                    widget.buttonCrossAxisAlignment ??
-                    CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    focusNode: cancelFocusNode,
-                    focusColor: widget.focusColor ?? Colors.grey.shade300,
-                    onTap: () {
-                      Navigator.pop(context);
-                      widget.onCancel;
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color:
-                            (cancelFocusNode.hasFocus == true)
-                                ? widget.focusColor ?? Colors.grey.shade300
-                                : Colors.transparent,
-                      ),
-                      child:
-                          widget.cancelButton ??
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
-                    ),
-                  ),
+              ? Container(
 
-                  const SizedBox(width: 10),
-                  InkWell(
-                    focusNode: doneFocusNode,
-                    focusColor: widget.focusColor ?? Colors.grey.shade300,
-                    onTap: () {
-                      setState(() {
-                        widget.onDateSelected(focusSelectedDate);
+                child: Row(
+                  mainAxisAlignment:
+                      widget.buttonMainAxisAlignment ?? MainAxisAlignment.end,
+                  crossAxisAlignment:
+                      widget.buttonCrossAxisAlignment ??
+                      CrossAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      focusNode: cancelFocusNode,
+                      focusColor: widget.focusColor ?? Colors.grey.shade300,
+                      onTap: () {
                         Navigator.pop(context);
-                      });
-                      widget.onDone;
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color:
-                            (doneFocusNode.hasFocus == true)
-                                ? widget.focusColor ?? Colors.grey.shade300
-                                : Colors.transparent,
-                        // borderRadius: BorderRadius.circular(8),
+                        widget.onCancel;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color:
+                              (cancelFocusNode.hasFocus == true)
+                                  ? widget.focusColor ?? Colors.grey.shade300
+                                  : Colors.transparent,
+                        ),
+                        child:
+                            widget.cancelButton ??
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
                       ),
-                      child:
-                          widget.doneButton ??
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              "Done",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(width: 10),
+                    InkWell(
+                      focusNode: doneFocusNode,
+                      focusColor: widget.focusColor ?? Colors.grey.shade300,
+                      onTap: () {
+                        setState(() {
+                          widget.onDateSelected(focusSelectedDate);
+                          Navigator.pop(context);
+                        });
+                        widget.onDone;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color:
+                              (doneFocusNode.hasFocus == true)
+                                  ? widget.focusColor ?? Colors.grey.shade300
+                                  : Colors.transparent,
+                          // borderRadius: BorderRadius.circular(8),
+                        ),
+                        child:
+                            widget.doneButton ??
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                "Done",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               )
               : Container(),
         ],
@@ -766,8 +777,8 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
   /// Builds the month picker widget, allowing users to select a month.
   Widget buildMonthPicker() {
     // Generate a list of months for the current year
-    final months = List.generate(12, (index) => DateTime(tempYear, index + 1));
-
+     final months = List.generate(12, (index) => DateTime(tempYear, index + 1));
+    final totalYears = widget.lastDate.year - widget.firstDate.year + 1;
     return CallbackShortcuts(
       bindings: {
         // Handles the Enter key for various focus nodes
@@ -831,36 +842,60 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
             setState(() {});
           }
         },
-        // Handles left arrow key navigation
+        // // Handles left arrow key navigation
         LogicalKeySet(LogicalKeyboardKey.arrowLeft): () {
           if (monthFocusNode.hasFocus) {
             if (focusedMonthIndex > 0) {
-              focusedMonthIndex--; // Move to the previous month
-            } else {
-              if (tempYear > widget.firstDate.year) {
-                focusedMonthIndex =
-                    11; // Wrap to the last month of the previous year
-                tempYear--;
-              }
+              focusedMonthIndex--;
+            } else if (tempYear > widget.firstDate.year) {
+              focusedMonthIndex = 11;
+              tempYear--;
+              monthPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
             }
             setState(() {});
           }
         },
-        // Handles right arrow key navigation
         LogicalKeySet(LogicalKeyboardKey.arrowRight): () {
           if (monthFocusNode.hasFocus) {
             if (focusedMonthIndex < 11) {
-              focusedMonthIndex++; // Move to the next month
-            } else {
-              if (tempYear < widget.lastDate.year) {
-                focusedMonthIndex =
-                    0; // Wrap to the first month of the next year
-                tempYear++;
-              }
+              focusedMonthIndex++;
+            } else if (tempYear < widget.lastDate.year) {
+              focusedMonthIndex = 0;
+              tempYear++;
+              monthPageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
             }
             setState(() {});
           }
         },
+        // LogicalKeySet(LogicalKeyboardKey.arrowLeft): () {
+        //   if (monthFocusNode.hasFocus) {
+        //     if (focusedMonthIndex > 0) {
+        //       focusedMonthIndex--; // Move to the previous month
+        //     } else {
+        //       if (tempYear > widget.firstDate.year) {
+        //         focusedMonthIndex =
+        //             11; // Wrap to the last month of the previous year
+        //         tempYear--;
+        //       }
+        //     }
+        //     setState(() {});
+        //   }
+        // },
+        // // Handles right arrow key navigation
+        // LogicalKeySet(LogicalKeyboardKey.arrowRight): () {
+        //   if (monthFocusNode.hasFocus) {
+        //     if (focusedMonthIndex < 11) {
+        //       focusedMonthIndex++; // Move to the next month
+        //     } else {
+        //       if (tempYear < widget.lastDate.year) {
+        //         focusedMonthIndex =
+        //             0; // Wrap to the first month of the next year
+        //         tempYear++;
+        //       }
+        //     }
+        //     setState(() {});
+        //   }
+        // },
         // Handles Tab key navigation between focus nodes
         LogicalKeySet(LogicalKeyboardKey.tab): () {
           if (arrowLeftMonthFocusNode.hasFocus) {
@@ -899,7 +934,6 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header row with navigation arrows and year text
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -908,7 +942,10 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                   focusColor: widget.focusColor ?? Colors.grey.shade300,
                   onPressed: () {
                     if (tempYear > widget.firstDate.year) {
-                      setState(() => tempYear--);
+                      setState(() {
+                        tempYear--;
+                        monthPageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+                      });
                     }
                   },
                   icon: Icon(
@@ -921,26 +958,21 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color:
-                          (yearFocusNode.hasFocus == true)
-                              ? widget.focusColor ?? Colors.grey.shade300
-                              : Colors.transparent,
+                      color: (yearFocusNode.hasFocus == true)
+                          ? widget.focusColor ?? Colors.grey.shade300
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: InkWell(
                       onTap: () {
                         setState(() {
-                          isDecadePickerOpen = true; // Open the decade picker
+                          isDecadePickerOpen = true;
                         });
                       },
                       child: Text(
                         "$tempYear",
-                        style:
-                            widget.headerTextStyle ??
-                            TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: widget.headerTextStyle ??
+                            TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -950,7 +982,10 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                   focusColor: widget.focusColor ?? Colors.grey.shade300,
                   onPressed: () {
                     if (tempYear < widget.lastDate.year) {
-                      setState(() => tempYear++);
+                      setState(() {
+                        tempYear++;
+                        monthPageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+                      });
                     }
                   },
                   icon: Icon(
@@ -961,73 +996,219 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
               ],
             ),
             const SizedBox(height: 8),
-            // Month grid for selection
-            GridView.builder(
-              shrinkWrap: true,
-              itemCount: months.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.75,
-              ),
-              itemBuilder: (context, index) {
-                final isSelected =
-                    selectedDate1.year == months[index].year &&
-                    selectedDate1.month == months[index].month;
-                final isFocused = focusedMonthIndex == index;
-                return Focus(
-                  focusNode: monthFocusNode,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        displayedMonth = DateTime(
-                          tempYear,
-                          months[index].month,
-                        );
-                        selectedDate1 = months[index];
-                        focusedMonthIndex = index;
-                        selectedYear = tempYear;
-                        isMonthYearPickerOpen = false;
-                        isDecadePickerOpen = false;
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? widget.selectedColor ?? Colors.blue
-                                : widget.unSelectedColor ?? Colors.transparent,
-                        border:
-                            (monthFocusNode.hasFocus == true) && (isFocused)
-                                ? Border.all(
-                                  color: widget.borderColor ?? Colors.grey,
-                                  width: widget.borderWidth ?? 1.0,
-                                )
-                                : null,
-                        borderRadius:
-                            widget.borderRadius ?? BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        DateFormat.MMM().format(months[index]),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color:
-                              isSelected
-                                  ? widget.textSelectedColor ?? Colors.white
-                                  : widget.textColor ?? Colors.black,
-                        ),
-                      ),
+            SizedBox(
+              height: 320, // Adjust as needed
+              child: PageView.builder(
+                controller: monthPageController,
+                itemCount: totalYears,
+                onPageChanged: (index) {
+                  setState(() {
+                    tempYear = widget.firstDate.year + index;
+                  });
+                },
+                itemBuilder: (context, pageIndex) {
+                  final year = widget.firstDate.year + pageIndex;
+                  final months = List.generate(12, (i) => DateTime(year, i + 1));
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    itemCount: months.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.75,
                     ),
-                  ),
-                );
-              },
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedDate1.year == months[index].year &&
+                          selectedDate1.month == months[index].month;
+                      final isFocused = focusedMonthIndex == index && tempYear == year;
+                      return Focus(
+                        focusNode: monthFocusNode,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              displayedMonth = DateTime(
+                                year,
+                                months[index].month,
+                              );
+                              selectedDate1 = months[index];
+                              focusedMonthIndex = index;
+                              selectedYear = year;
+                              tempYear = year;
+                              isMonthYearPickerOpen = false;
+                              isDecadePickerOpen = false;
+                            });
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? widget.selectedColor ?? Colors.blue
+                                  : widget.unSelectedColor ?? Colors.transparent,
+                              border: (monthFocusNode.hasFocus == true) && (isFocused)
+                                  ? Border.all(
+                                color: widget.borderColor ?? Colors.grey,
+                                width: widget.borderWidth ?? 1.0,
+                              )
+                                  : null,
+                              borderRadius:
+                              widget.borderRadius ?? BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              DateFormat.MMM().format(months[index]),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? widget.textSelectedColor ?? Colors.white
+                                    : widget.textColor ?? Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 8),
           ],
         ),
       ),
+
+      // child: buildHeaderCard(
+      //   child: Column(
+      //     mainAxisSize: MainAxisSize.min,
+      //     children: [
+      //       // Header row with navigation arrows and year text
+      //       Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //         children: [
+      //           IconButton(
+      //             focusNode: arrowLeftMonthFocusNode,
+      //             focusColor: widget.focusColor ?? Colors.grey.shade300,
+      //             onPressed: () {
+      //               if (tempYear > widget.firstDate.year) {
+      //                 setState(() => tempYear--);
+      //               }
+      //             },
+      //             icon: Icon(
+      //               Icons.arrow_left,
+      //               color: widget.arrowColor ?? Colors.grey,
+      //             ),
+      //           ),
+      //           Focus(
+      //             focusNode: yearFocusNode,
+      //             child: Container(
+      //               padding: const EdgeInsets.all(4),
+      //               decoration: BoxDecoration(
+      //                 color:
+      //                     (yearFocusNode.hasFocus == true)
+      //                         ? widget.focusColor ?? Colors.grey.shade300
+      //                         : Colors.transparent,
+      //                 borderRadius: BorderRadius.circular(5),
+      //               ),
+      //               child: InkWell(
+      //                 onTap: () {
+      //                   setState(() {
+      //                     isDecadePickerOpen = true; // Open the decade picker
+      //                   });
+      //                 },
+      //                 child: Text(
+      //                   "$tempYear",
+      //                   style:
+      //                       widget.headerTextStyle ??
+      //                       TextStyle(
+      //                         fontSize: 18,
+      //                         fontWeight: FontWeight.bold,
+      //                       ),
+      //                 ),
+      //               ),
+      //             ),
+      //           ),
+      //           IconButton(
+      //             focusNode: arrowRightMonthFocusNode,
+      //             focusColor: widget.focusColor ?? Colors.grey.shade300,
+      //             onPressed: () {
+      //               if (tempYear < widget.lastDate.year) {
+      //                 setState(() => tempYear++);
+      //               }
+      //             },
+      //             icon: Icon(
+      //               Icons.arrow_right,
+      //               color: widget.arrowColor ?? Colors.grey,
+      //             ),
+      //           ),
+      //         ],
+      //       ),
+      //       const SizedBox(height: 8),
+      //       // Month grid for selection
+      //       GridView.builder(
+      //         shrinkWrap: true,
+      //         itemCount: months.length,
+      //         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      //           crossAxisCount: 4,
+      //           crossAxisSpacing: 10,
+      //           mainAxisSpacing: 14,
+      //           childAspectRatio: 0.75,
+      //         ),
+      //         itemBuilder: (context, index) {
+      //           final isSelected =
+      //               selectedDate1.year == months[index].year &&
+      //               selectedDate1.month == months[index].month;
+      //           final isFocused = focusedMonthIndex == index;
+      //           return Focus(
+      //             focusNode: monthFocusNode,
+      //             child: GestureDetector(
+      //               onTap: () {
+      //                 setState(() {
+      //                   displayedMonth = DateTime(
+      //                     tempYear,
+      //                     months[index].month,
+      //                   );
+      //                   selectedDate1 = months[index];
+      //                   focusedMonthIndex = index;
+      //                   selectedYear = tempYear;
+      //                   isMonthYearPickerOpen = false;
+      //                   isDecadePickerOpen = false;
+      //                 });
+      //               },
+      //               child: Container(
+      //                 alignment: Alignment.center,
+      //                 decoration: BoxDecoration(
+      //                   color:
+      //                       isSelected
+      //                           ? widget.selectedColor ?? Colors.blue
+      //                           : widget.unSelectedColor ?? Colors.transparent,
+      //                   border:
+      //                       (monthFocusNode.hasFocus == true) && (isFocused)
+      //                           ? Border.all(
+      //                             color: widget.borderColor ?? Colors.grey,
+      //                             width: widget.borderWidth ?? 1.0,
+      //                           )
+      //                           : null,
+      //                   borderRadius:
+      //                       widget.borderRadius ?? BorderRadius.circular(8),
+      //                 ),
+      //                 child: Text(
+      //                   DateFormat.MMM().format(months[index]),
+      //                   style: TextStyle(
+      //                     fontWeight: FontWeight.w600,
+      //                     color:
+      //                         isSelected
+      //                             ? widget.textSelectedColor ?? Colors.white
+      //                             : widget.textColor ?? Colors.black,
+      //                   ),
+      //                 ),
+      //               ),
+      //             ),
+      //           );
+      //         },
+      //       ),
+      //       const SizedBox(height: 8),
+      //     ],
+      //   ),
+      // ),
     );
   }
 
@@ -1413,73 +1594,6 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
               ),
             )
 
-            // GridView.builder (
-            //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            //     crossAxisCount: 7,
-            //     mainAxisSpacing: 6,
-            //     crossAxisSpacing: 6,
-            //   ),
-            //   shrinkWrap: true,
-            //   // scrollDirection: Axis.horizontal,
-            //   itemCount: 42,
-            //   itemBuilder: (_, index) {
-            //     final date = calendarDays[index];
-            //     final isCurrentMonth = date.month == displayedMonth.month;
-            //     final isSelected =
-            //         date.year == selectedDate.year &&
-            //         date.month == selectedDate.month &&
-            //         date.day == selectedDate.day;
-            //     final isFocusDate =
-            //         date.year == focusSelectedDate.year &&
-            //         date.month == focusSelectedDate.month &&
-            //         date.day == focusSelectedDate.day;
-            //
-            //     return Focus(
-            //       focusNode: dateFocusNode,
-            //       child: GestureDetector(
-            //         onTap: () {
-            //           setState(() {
-            //             focusSelectedDate = date;
-            //             widget.onDateSelected(date);
-            //           });
-            //         },
-            //         child: Container(
-            //           alignment: Alignment.center,
-            //           decoration: BoxDecoration(
-            //             color:
-            //                 isCurrentMonth
-            //                     ? (isSelected
-            //                         ? widget.selectedColor ?? Colors.blue
-            //                         : widget.unSelectedColor ??
-            //                             Colors.transparent)
-            //                     : widget.disabledColor ?? Colors.transparent,
-            //             border: Border.all(
-            //               color:
-            //                   isFocusDate
-            //                       ? widget.borderColor ?? Colors.grey
-            //                       : Colors.transparent,
-            //               width: widget.borderWidth ?? 1.0,
-            //             ),
-            //             borderRadius:
-            //                 widget.borderRadius ?? BorderRadius.circular(30),
-            //           ),
-            //           child: Text(
-            //             '${date.day}',
-            //             style: TextStyle(
-            //               color:
-            //                   isCurrentMonth
-            //                       ? (isSelected
-            //                           ? widget.textSelectedColor ?? Colors.white
-            //                           : widget.textColor ?? Colors.black)
-            //                       : widget.textDisabledColor ?? Colors.grey,
-            //               fontWeight: FontWeight.w500,
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     );
-            //   },
-            // ),
           ],
         ),
       ),
