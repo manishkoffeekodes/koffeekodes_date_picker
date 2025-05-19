@@ -658,6 +658,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
                             .toList();
                     if ((isYearsList.firstOrNull == null) ||
                         isYearsList.first != widget.lastDate.year) {
+
                       setState(() => currentDecadeStart += 16);
                     }
                   },
@@ -666,73 +667,92 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
             ),
             const SizedBox(height: 10),
             // Year grid for selection
-            Focus(
-              focusNode: yearGridFocusNode,
-              child: GridView.builder(
-                shrinkWrap: true,
-                itemCount: 16,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemBuilder: (context, index) {
-                  final year = yearsGrid[index]!;
-                  final isDisabled =
-                      year < widget.firstDate.year ||
-                      year > widget.lastDate.year;
-                  final isSelected = year == selectedYear && !isDisabled;
+          SizedBox(
+            height: 320, // Adjust as needed
+            child: PageView.builder(
+                controller:yearPageController,
 
-                  return GestureDetector(
-                    onTap:
-                        isDisabled
-                            ? null
-                            : () {
+                onPageChanged: (index) {
+                  setState(() {
+
+                  });
+                },
+                itemBuilder: (context, pageIndex) {
+
+                  return
+                    Focus(
+                      focusNode: yearGridFocusNode,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        itemCount: 16,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemBuilder: (context, index) {
+                          final year = yearsGrid[index]!;
+                          final isDisabled =
+                              year < widget.firstDate.year ||
+                                  year > widget.lastDate.year;
+                          final isSelected = year == selectedYear && !isDisabled;
+
+                          return GestureDetector(
+                            onTap:
+                            isDisabled
+                                ? null
+                                : () {
                               setState(() {
                                 selectedYear = year;
                                 tempYear = year;
                                 isDecadePickerOpen = false;
                               });
                             },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            isDisabled
-                                ? widget.disabledColor ?? Colors.grey.shade300
-                                : isSelected
-                                ? widget.selectedColor ?? Colors.blue
-                                : widget.unSelectedColor ?? Colors.transparent,
-                        borderRadius:
-                            widget.borderRadius ?? BorderRadius.circular(8),
-                        border:
-                            (yearGridFocusNode.hasFocus && tempYear == year)
-                                ? Border.all(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color:
+                                isDisabled
+                                    ? widget.disabledColor ?? Colors.grey.shade300
+                                    : isSelected
+                                    ? widget.selectedColor ?? Colors.blue
+                                    : widget.unSelectedColor ??
+                                    Colors.transparent,
+                                borderRadius:
+                                widget.borderRadius ?? BorderRadius.circular(8),
+                                border:
+                                (yearGridFocusNode.hasFocus && tempYear == year)
+                                    ? Border.all(
                                   color: widget.borderColor ?? Colors.grey,
                                   width: widget.borderWidth ?? 1.0,
                                 )
-                                : null,
+                                    : null,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '$year',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color:
+                                  isDisabled
+                                      ? widget.textDisabledColor ??
+                                      Colors.grey[500]
+                                      : isSelected
+                                      ? widget.textSelectedColor ?? Colors.white
+                                      : widget.textColor ?? Colors.black,
+                                  fontWeight:
+                                  isDisabled ? FontWeight.normal : FontWeight
+                                      .bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '$year',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color:
-                              isDisabled
-                                  ? widget.textDisabledColor ?? Colors.grey[500]
-                                  : isSelected
-                                  ? widget.textSelectedColor ?? Colors.white
-                                  : widget.textColor ?? Colors.black,
-                          fontWeight:
-                              isDisabled ? FontWeight.normal : FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                    );
+
+                }),
+          )
           ],
         ),
       ),
@@ -840,35 +860,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
             setState(() {});
           }
         },
-        // LogicalKeySet(LogicalKeyboardKey.arrowLeft): () {
-        //   if (monthFocusNode.hasFocus) {
-        //     if (focusedMonthIndex > 0) {
-        //       focusedMonthIndex--; // Move to the previous month
-        //     } else {
-        //       if (tempYear > widget.firstDate.year) {
-        //         focusedMonthIndex =
-        //             11; // Wrap to the last month of the previous year
-        //         tempYear--;
-        //       }
-        //     }
-        //     setState(() {});
-        //   }
-        // },
-        // // Handles right arrow key navigation
-        // LogicalKeySet(LogicalKeyboardKey.arrowRight): () {
-        //   if (monthFocusNode.hasFocus) {
-        //     if (focusedMonthIndex < 11) {
-        //       focusedMonthIndex++; // Move to the next month
-        //     } else {
-        //       if (tempYear < widget.lastDate.year) {
-        //         focusedMonthIndex =
-        //             0; // Wrap to the first month of the next year
-        //         tempYear++;
-        //       }
-        //     }
-        //     setState(() {});
-        //   }
-        // },
+
         // Handles Tab key navigation between focus nodes
         LogicalKeySet(LogicalKeyboardKey.tab): () {
           if (arrowLeftMonthFocusNode.hasFocus) {
@@ -1049,139 +1041,7 @@ class _CustomCalendarUIState extends State<CustomCalendarUI> {
         ),
       ),
 
-      // child: buildHeaderCard(
-      //   child: Column(
-      //     mainAxisSize: MainAxisSize.min,
-      //     children: [
-      //       // Header row with navigation arrows and year text
-      //       Row(
-      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //         children: [
-      //           IconButton(
-      //             focusNode: arrowLeftMonthFocusNode,
-      //             focusColor: widget.focusColor ?? Colors.grey.shade300,
-      //             onPressed: () {
-      //               if (tempYear > widget.firstDate.year) {
-      //                 setState(() => tempYear--);
-      //               }
-      //             },
-      //             icon: Icon(
-      //               Icons.arrow_left,
-      //               color: widget.arrowColor ?? Colors.grey,
-      //             ),
-      //           ),
-      //           Focus(
-      //             focusNode: yearFocusNode,
-      //             child: Container(
-      //               padding: const EdgeInsets.all(4),
-      //               decoration: BoxDecoration(
-      //                 color:
-      //                     (yearFocusNode.hasFocus == true)
-      //                         ? widget.focusColor ?? Colors.grey.shade300
-      //                         : Colors.transparent,
-      //                 borderRadius: BorderRadius.circular(5),
-      //               ),
-      //               child: InkWell(
-      //                 onTap: () {
-      //                   setState(() {
-      //                     isDecadePickerOpen = true; // Open the decade picker
-      //                   });
-      //                 },
-      //                 child: Text(
-      //                   "$tempYear",
-      //                   style:
-      //                       widget.headerTextStyle ??
-      //                       TextStyle(
-      //                         fontSize: 18,
-      //                         fontWeight: FontWeight.bold,
-      //                       ),
-      //                 ),
-      //               ),
-      //             ),
-      //           ),
-      //           IconButton(
-      //             focusNode: arrowRightMonthFocusNode,
-      //             focusColor: widget.focusColor ?? Colors.grey.shade300,
-      //             onPressed: () {
-      //               if (tempYear < widget.lastDate.year) {
-      //                 setState(() => tempYear++);
-      //               }
-      //             },
-      //             icon: Icon(
-      //               Icons.arrow_right,
-      //               color: widget.arrowColor ?? Colors.grey,
-      //             ),
-      //           ),
-      //         ],
-      //       ),
-      //       const SizedBox(height: 8),
-      //       // Month grid for selection
-      //       GridView.builder(
-      //         shrinkWrap: true,
-      //         itemCount: months.length,
-      //         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      //           crossAxisCount: 4,
-      //           crossAxisSpacing: 10,
-      //           mainAxisSpacing: 14,
-      //           childAspectRatio: 0.75,
-      //         ),
-      //         itemBuilder: (context, index) {
-      //           final isSelected =
-      //               selectedDate1.year == months[index].year &&
-      //               selectedDate1.month == months[index].month;
-      //           final isFocused = focusedMonthIndex == index;
-      //           return Focus(
-      //             focusNode: monthFocusNode,
-      //             child: GestureDetector(
-      //               onTap: () {
-      //                 setState(() {
-      //                   displayedMonth = DateTime(
-      //                     tempYear,
-      //                     months[index].month,
-      //                   );
-      //                   selectedDate1 = months[index];
-      //                   focusedMonthIndex = index;
-      //                   selectedYear = tempYear;
-      //                   isMonthYearPickerOpen = false;
-      //                   isDecadePickerOpen = false;
-      //                 });
-      //               },
-      //               child: Container(
-      //                 alignment: Alignment.center,
-      //                 decoration: BoxDecoration(
-      //                   color:
-      //                       isSelected
-      //                           ? widget.selectedColor ?? Colors.blue
-      //                           : widget.unSelectedColor ?? Colors.transparent,
-      //                   border:
-      //                       (monthFocusNode.hasFocus == true) && (isFocused)
-      //                           ? Border.all(
-      //                             color: widget.borderColor ?? Colors.grey,
-      //                             width: widget.borderWidth ?? 1.0,
-      //                           )
-      //                           : null,
-      //                   borderRadius:
-      //                       widget.borderRadius ?? BorderRadius.circular(8),
-      //                 ),
-      //                 child: Text(
-      //                   DateFormat.MMM().format(months[index]),
-      //                   style: TextStyle(
-      //                     fontWeight: FontWeight.w600,
-      //                     color:
-      //                         isSelected
-      //                             ? widget.textSelectedColor ?? Colors.white
-      //                             : widget.textColor ?? Colors.black,
-      //                   ),
-      //                 ),
-      //               ),
-      //             ),
-      //           );
-      //         },
-      //       ),
-      //       const SizedBox(height: 8),
-      //     ],
-      //   ),
-      // ),
+
     );
   }
 
